@@ -3,40 +3,579 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF 문제 추출기</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- pdf.js 라이브러리 CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-    <script>
-        // pdf.js 워커 스크립트 경로 설정 (CDN 사용 시 필요)
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
-    </script>
+    <title>자기주도 학습 체크리스트</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e2e8f0; /* Soft blue-gray background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for longer content */
+            min-height: 100vh;
+            padding: 30px; /* Increased padding */
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 2rem; /* More rounded corners */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15); /* Deeper shadow */
+            padding: 3.5rem; /* Increased padding */
+            max-width: 950px; /* Slightly wider max-width */
+            width: 100%;
+            margin-top: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.8); /* Subtle white border for depth */
+        }
+        .checklist-section {
+            margin-bottom: 2.5rem; /* Increased margin */
+            padding: 2rem; /* Increased padding */
+            background: linear-gradient(135deg, #fdfdfe, #f8f9fa); /* Subtle gradient background */
+            border-radius: 1.5rem; /* More rounded corners */
+            border: 1px solid #e0e7ed; /* Softer border */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* Refined shadow */
+        }
+        .checklist-section h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; /* Space between emoji and text */
+            margin-bottom: 1.5rem; /* Increased margin below heading */
+            font-size: 2.25rem; /* Larger heading font */
+            font-weight: 700; /* Bolder heading */
+            color: #2c3e50; /* Darker, richer text color */
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem; /* Increased margin */
+        }
+        .checklist-button {
+            flex-grow: 1;
+            padding: 1rem 1.5rem; /* More padding */
+            border-radius: 1rem; /* More rounded corners for buttons */
+            border: 2px solid #cbd5e1; /* Light border */
+            background-color: #ffffff;
+            color: #334155; /* Darker text */
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out; /* Slower transition */
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08); /* More pronounced shadow */
+            position: relative; /* For potential future icons/effects */
+            font-size: 1.05rem; /* Slightly larger font */
+        }
+        .checklist-button:hover {
+            background-color: #f0f4f8; /* Lighter hover background */
+            border-color: #94a3b8; /* Slightly darker border on hover */
+            transform: translateY(-2px); /* Subtle lift effect */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+        }
+        .checklist-button.checked {
+            background: linear-gradient(45deg, #4c8bf5, #6a5acd); /* Gradient blue/purple for checked */
+            color: #ffffff;
+            border-color: #4c8bf5;
+            box-shadow: 0 6px 15px rgba(76, 139, 245, 0.4); /* More vibrant shadow */
+            transform: translateY(-1px); /* Slight lift */
+        }
+        .checklist-button.checked:hover {
+            background: linear-gradient(45deg, #3b74e0, #5a4bba); /* Darker gradient on hover when checked */
+            border-color: #3b74e0;
+        }
+        .score-display {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb); /* Soft green gradient */
+            border: 2px solid #28a745; /* Deeper green border */
+            color: #1a5e2d; /* Darker green text */
+            padding: 2rem; /* More padding */
+            border-radius: 1.5rem; /* More rounded */
+            margin-top: 3rem; /* More margin */
+            text-align: center;
+            font-size: 1.5rem; /* Larger font */
+            font-weight: 700; /* Bolder font */
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3); /* Pronounced shadow */
+        }
+        .evaluation-message {
+            margin-top: 1.25rem; /* More margin */
+            font-size: 1.2rem; /* Larger font */
+            color: #1f2937;
+            font-weight: 500;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 2rem; /* Increased gap */
+            margin-top: 3rem; /* Increased margin */
+        }
+        .action-button {
+            padding: 1rem 2.5rem; /* More padding */
+            border-radius: 1rem; /* More rounded */
+            font-weight: 700; /* Bolder */
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            font-size: 1.1rem;
+            letter-spacing: 0.05em; /* Subtle letter spacing */
+        }
+        .calculate-button {
+            background: linear-gradient(45deg, #28a745, #218838); /* Green gradient */
+            color: #ffffff;
+            border: none;
+        }
+        .calculate-button:hover {
+            background: linear-gradient(45deg, #218838, #1e7e34);
+            transform: translateY(-3px); /* More pronounced lift */
+            box-shadow: 0 8px 18px rgba(40, 167, 69, 0.4);
+        }
+        .reset-button {
+            background: linear-gradient(45deg, #dc3545, #c82333); /* Red gradient */
+            color: #ffffff;
+            border: none;
+        }
+        .reset-button:hover {
+            background: linear-gradient(45deg, #c82333, #bd2130);
+            transform: translateY(-3px); /* More pronounced lift */
+            box-shadow: 0 8px 18px rgba(220, 53, 69, 0.4);
+        }
+
+        /* Loading spinner styles */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #4c8bf5;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* AI Advice section */
+        .ai-advice {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            background-color: #e0f2fe; /* Light blue background */
+            border: 1px solid #90cdf4;
+            border-radius: 1rem;
+            font-size: 1.1rem;
+            color: #2b6cb0; /* Darker blue text */
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(144, 205, 244, 0.3);
+            text-align: left; /* Align text left for readability */
+        }
+        .ai-advice h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: #1a365d;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .ai-advice ul {
+            list-style: disc;
+            margin-left: 1.5rem;
+            line-height: 1.6;
+        }
+        .ai-advice li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+            .container {
+                padding: 2rem;
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+            .checklist-section {
+                padding: 1.5rem;
+                margin-bottom: 2rem;
+            }
+            .checklist-section h2 {
+                font-size: 1.75rem;
+                margin-bottom: 1rem;
+            }
+            .checklist-button {
+                padding: 0.8rem 1.2rem;
+                font-size: 0.95rem;
+            }
+            .score-display {
+                font-size: 1.2rem;
+                padding: 1.5rem;
+                margin-top: 2rem;
+            }
+            .evaluation-message {
+                font-size: 1rem;
+            }
+            .action-buttons {
+                flex-direction: column;
+                gap: 1.25rem;
+                margin-top: 2rem;
+            }
+            .action-button {
+                width: 100%;
+                padding: 0.9rem 1.5rem;
+                font-size: 1rem;
+            }
+            .ai-advice {
+                font-size: 1rem;
+                padding: 1rem;
+            }
+            .ai-advice h3 {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>PDF 기반 문제 추출기</h1>
+        <h1 class="text-5xl font-extrabold text-center mb-10 rounded-2xl p-6 bg-gradient-to-r from-blue-600 to-purple-700 text-white shadow-xl">
+            ✨ 자기주도 학습 체크리스트 ✨
+        </h1>
+        <p class="text-center text-gray-700 mb-12 text-xl leading-relaxed">
+            스스로 공부 계획을 세우고, 실천하고, 잘했는지 확인하는 거예요. <br>이 체크리스트를 보면서 혼자서도 똑똑하게 공부하는 습관을 길러봐요! 🚀
+        </p>
 
-        <div class="upload-section">
-            <input type="file" id="pdfFile" accept=".pdf">
-            <button id="extractTextBtn">PDF 텍스트 추출</button>
-        </div>
-
-        <div class="content-section">
-            <h2>추출된 텍스트:</h2>
-            <div id="extractedText" class="text-area">
-                PDF 파일을 업로드하고 'PDF 텍스트 추출' 버튼을 눌러주세요.
+        <!-- Section 1: 공부 목표 정하기 -->
+        <div class="checklist-section">
+            <h2>🎯 1. 공부 목표 정하기 (계획하기)</h2>
+            <div class="space-y-4">
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 목표 정하기">이번에 공부해서 뭘 잘하고 싶은지 정확히 정했나요? (예: 중간고사 영어 90점 받기, 수학 문제집 한 권 끝내기, 역사책 한 권 다 읽기)</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 목표 정하기">목표가 너무 어렵거나 너무 쉽지 않고, 내가 정말 이룰 수 있는 건가요? 💪</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 목표 정하기">큰 목표(예: 이번 학기 성적 올리기)를 세우고, 그걸 위해 작은 목표들(예: 매일 영어 단어 10개 외우기)로 나눴나요?</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 목표 정하기">작은 목표들을 언제까지 끝낼지 날짜를 정했나요? 🗓️</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 목표 정하기">이 목표를 이루면 내가 정말 기쁘고 뿌듯할 것 같나요? ✨</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 목표 정하기">목표를 달성했을 때 어떤 좋은 점이 있을지 생각해 봤나요? 🏆</button>
+                </div>
             </div>
         </div>
 
-        <div class="content-section">
-            <h2>생성된 문제:</h2>
-            <div id="generatedQuestions" class="text-area">
-                (이곳에 생성된 문제가 표시됩니다. 문제 생성은 백엔드 연동이 필요합니다.)
+        <!-- Section 2: 공부 계획 세우기 -->
+        <div class="checklist-section">
+            <h2>📝 2. 공부 계획 세우기 (실천 준비)</h2>
+            <div class="space-y-4">
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 계획 세우기">목표를 이루려면 어떤 내용을 공부해야 할지 정확히 알고 있나요?</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 계획 세우기">필요한 책이나 문제집, 인터넷 강의 같은 공부 자료들을 다 준비했나요? 📚</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 계획 세우기">나한테 가장 잘 맞는 공부 방법(예: 중요한 내용 요약하기, 그림으로 정리하기, 문제 풀기, 친구랑 같이 설명하기)을 골랐나요?</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 계획 세우기">때로는 여러 가지 방법을 섞어서 사용하고 있나요? 💡</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 계획 세우기">하루, 일주일, 한 달 동안 어떻게 공부할지 구체적으로 계획을 세웠나요?</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 계획 세우기">공부에 방해받지 않고 집중할 수 있는 시간을 정해두었나요? ⏰</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 계획 세우기">공부하는 시간과 쉬는 시간을 잘 나누었나요? (예: 40분 공부하고 10분 쉬기) ☕</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 계획 세우기">조용하고 편안하게 공부할 수 있는 나만의 공간이 있나요? 🏡</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 계획 세우기">공부를 방해하는 것들(핸드폰, TV, 게임 등)을 미리 치워두었나요? 📵</button>
+                </div>
             </div>
-            <button id="generateQuestionsBtn" disabled>문제 생성 (백엔드 필요)</button>
+        </div>
+
+        <!-- Section 3: 공부하기 -->
+        <div class="checklist-section">
+            <h2>🏃‍♀️ 3. 공부하기 (실천하고 관리하기)</h2>
+            <div class="space-y-4">
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부하기">세운 계획대로 꾸준히 공부하고 있나요? ✅</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부하기">갑자기 일이 생겨도 계획을 조금 바꿔서라도 공부를 계속하고 있나요? 🔄</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부하기">그냥 읽기만 하는 게 아니라, 내용을 이해하고 궁금한 점은 질문하면서 공부하고 있나요? 🤔</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부하기">중요한 내용은 나만의 방법으로 정리하고 다시 써보고 있나요? ✍️</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부하기">모르는 내용이나 어려운 문제가 생겼을 때, 스스로 찾아보려고 노력하나요? (예: 인터넷 검색, 다른 책 찾아보기) 🔍</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부하기">필요하면 선생님이나 친구, 부모님께 도움을 요청할 준비가 되어 있나요? 🤝</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부하기">내가 어디까지 공부했는지 꾸준히 기록하고 있나요? (예: 공부 일기, 스터디 플래너에 체크) 📈</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: 공부 결과 확인하고 고치기 -->
+        <div class="checklist-section">
+            <h2>💡 4. 공부 결과 확인하고 고치기 (점검하고 발전시키기)</h2>
+            <div class="space-y-4">
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 결과 확인하고 고치기">주기적으로 내가 세운 목표를 잘 이루고 있는지 확인하고 있나요? (예: 주말마다, 한 달에 한 번) 📊</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 결과 확인하고 고치기">시험 점수나 문제집 정답률처럼 숫자로 정확하게 확인하고 있나요? 💯</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 결과 확인하고 고치기">어떤 점은 잘했고, 어떤 점은 부족했는지 스스로 생각해 봤나요? 🤔</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 결과 확인하고 고치기">공부하면서 어려웠던 점이나 다음에는 어떻게 하면 더 좋을지 찾아냈나요? 🛠️</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 결과 확인하고 고치기">확인한 내용을 바탕으로 다음번 공부 계획을 더 좋게 만들고 있나요? ➡️</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 결과 확인하고 고치기">필요하다면 공부 방법이나 전략을 바꾸고 있나요? 🔄</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="공부 결과 확인하고 고치기">작은 성공이라도 기록하고 스스로 칭찬하면서 공부하는 재미를 느끼고 있나요? 🌟</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: 나 자신을 관리하고 좋은 마음 갖기 -->
+        <div class="checklist-section">
+            <h2>💖 5. 나 자신을 관리하고 좋은 마음 갖기 (자기 관리와 태도)</h2>
+            <div class="space-y-4">
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="나 자신을 관리하고 좋은 마음 갖기">잠은 충분히 자고, 골고루 잘 먹어서 건강을 유지하고 있나요? 😴🍎</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="나 자신을 관리하고 좋은 마음 갖기">규칙적으로 운동해서 스트레스를 풀고 있나요? 🏃‍♂️💨</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="나 자신을 관리하고 좋은 마음 갖기">공부가 힘들어도 포기하지 않고 긍정적인 마음을 가지려고 노력하나요? 😊</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="나 자신을 관리하고 좋은 마음 갖기">공부를 즐거운 활동으로 생각하려고 노력하나요? 😄</button>
+                </div>
+                <div class="checklist-item">
+                    <button class="checklist-button" data-category="나 자신을 관리하고 좋은 마음 갖기">꾸준히 하는 것이 공부를 잘하는 가장 중요한 방법이라는 것을 알고 매일매일 노력하고 있나요? 🌱</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button id="calculateScoreBtn" class="action-button calculate-button">점수 계산하기</button>
+            <button id="resetChecklistBtn" class="action-button reset-button">초기화</button>
+        </div>
+
+        <!-- Score Display -->
+        <div id="scoreDisplay" class="score-display hidden">
+            <p>총 점수: <span id="currentScore">0</span>점</p>
+            <p id="evaluationMessage" class="evaluation-message"></p>
+            <div id="loadingSpinner" class="spinner hidden"></div>
+            <div id="llmAdvice" class="ai-advice hidden"></div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Get all checklist buttons
+        const checklistButtons = document.querySelectorAll('.checklist-button');
+        const calculateScoreBtn = document.getElementById('calculateScoreBtn');
+        const resetChecklistBtn = document.getElementById('resetChecklistBtn');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const currentScoreSpan = document.getElementById('currentScore');
+        const evaluationMessage = document.getElementById('evaluationMessage');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const llmAdviceDiv = document.getElementById('llmAdvice');
+
+        // Total possible score (number of checklist items)
+        const totalItems = checklistButtons.length;
+
+        // Add click event listener to each button
+        checklistButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Toggle 'checked' class
+                button.classList.toggle('checked');
+            });
+        });
+
+        // Function to calculate and display score and fetch AI advice
+        async function calculateScore() {
+            let score = 0;
+            const uncheckedItems = {}; // Object to store unchecked items by category
+            let maxUncheckedCount = 0;
+            let weakestCategories = [];
+
+            checklistButtons.forEach(button => {
+                const category = button.dataset.category;
+                const itemText = button.textContent.trim();
+
+                if (button.classList.contains('checked')) {
+                    score++;
+                } else {
+                    if (!uncheckedItems[category]) {
+                        uncheckedItems[category] = [];
+                    }
+                    uncheckedItems[category].push(itemText);
+                }
+            });
+
+            // Find categories with the most unchecked items
+            for (const category in uncheckedItems) {
+                const currentUncheckedCount = uncheckedItems[category].length;
+                if (currentUncheckedCount > maxUncheckedCount) {
+                    maxUncheckedCount = currentUncheckedCount;
+                    weakestCategories = [category]; // Start new list if a new max is found
+                } else if (currentUncheckedCount === maxUncheckedCount && maxUncheckedCount > 0) {
+                    weakestCategories.push(category); // Add to list if count is same as max
+                }
+            }
+
+            currentScoreSpan.textContent = score; // Update score text
+
+            // Determine evaluation message based on score
+            let message = '';
+            const percentage = (score / totalItems) * 100;
+
+            if (percentage >= 90) {
+                message = '🎉 완벽해요! 자기주도 학습의 달인이네요! 계속해서 멋진 학습 습관을 유지하세요!';
+            } else if (percentage >= 70) {
+                message = '👍 아주 잘하고 있어요! 조금만 더 노력하면 완벽해질 거예요. 지금처럼 꾸준히 해봐요!';
+            } else if (percentage >= 50) {
+                message = '👏 잘하고 있지만, 몇 가지 개선할 점이 보여요. 체크리스트를 다시 보면서 부족한 부분을 채워나가세요!';
+            } else if (percentage >= 30) {
+                message = '🤔 아직 시작 단계네요. 체크리스트를 보면서 하나씩 실천해 봐요! 작은 성공들이 모여 큰 변화를 만들 거예요.';
+            } else {
+                message = '😅 자기주도 학습에 대한 관심이 필요해요. 너무 걱정하지 말고, 쉬운 항목부터 하나씩 체크해보는 건 어떨까요? 응원합니다!';
+            }
+            evaluationMessage.textContent = message;
+
+            // Show the score display section
+            scoreDisplay.classList.remove('hidden');
+            llmAdviceDiv.classList.add('hidden'); // Hide previous advice
+            llmAdviceDiv.innerHTML = ''; // Clear previous advice content
+
+            // Show loading spinner
+            loadingSpinner.classList.remove('hidden');
+
+            // --- Gemini API Call for AI Advice ---
+            let uncheckedItemsFormattedString = '';
+            for (const category in uncheckedItems) {
+                uncheckedItemsFormattedString += `- ${category}:\n`;
+                uncheckedItems[category].forEach(item => {
+                    uncheckedItemsFormattedString += `  - ${item}\n`;
+                });
+            }
+
+            let prompt = `너는 중학생을 위한 자기주도 학습 조언 전문가야. 다음은 중학생의 자기주도 학습 체크리스트 결과야. 점수와 함께 체크되지 않은 항목들을 참고하여, 해당 학생이 자기주도 학습을 더 잘할 수 있도록 짧고, 격려하며, 실천 가능한 구체적인 조언을 3~5가지 목록으로 제공해줘.
+
+총 체크리스트 항목 수: ${totalItems}개
+체크된 항목 수: ${score}개
+백분율: ${percentage}%
+
+${uncheckedItemsFormattedString ? `체크되지 않은 항목들:\n${uncheckedItemsFormattedString}` : '모든 항목이 체크되었습니다!'}
+
+`;
+
+            if (weakestCategories.length > 0) {
+                prompt += `특히, 가장 부족한 영역인 ${weakestCategories.join(', ')}에 집중하여 조언해줘.`;
+            } else {
+                prompt += `모든 항목이 훌륭하게 체크되었으니, 현재의 좋은 학습 습관을 유지하고 다음 단계로 나아갈 수 있는 조언을 해줘.`;
+            }
+
+            prompt += `\n\n조언:`;
+
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // If you want to use models other than gemini-2.0-flash or imagen-3.0-generate-002, provide an API key here. Otherwise, leave this as-is.
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const aiAdviceText = result.candidates[0].content.parts[0].text;
+                    llmAdviceDiv.innerHTML = `<h3>✨ AI 학습 조언 ✨</h3><ul>${aiAdviceText.split('\n').map(item => `<li>${item.replace(/^- /, '')}</li>`).join('')}</ul>`;
+                    llmAdviceDiv.classList.remove('hidden');
+                } else {
+                    llmAdviceDiv.innerHTML = '<h3>✨ AI 학습 조언 ✨</h3><p>AI 조언을 가져오는 데 실패했습니다. 다시 시도해주세요.</p>';
+                    llmAdviceDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error fetching AI advice:', error);
+                llmAdviceDiv.innerHTML = '<h3>✨ AI 학습 조언 ✨</h3><p>AI 조언을 가져오는 중 오류가 발생했습니다. 네트워크 연결을 확인해주세요.</p>';
+                llmAdviceDiv.classList.remove('hidden');
+            } finally {
+                // Hide loading spinner regardless of success or failure
+                loadingSpinner.classList.add('hidden');
+            }
+        }
+
+        // Function to reset the checklist
+        function resetChecklist() {
+            checklistButtons.forEach(button => {
+                button.classList.remove('checked');
+            });
+            scoreDisplay.classList.add('hidden'); // Hide score display
+            currentScoreSpan.textContent = '0'; // Reset score text
+            evaluationMessage.textContent = ''; // Clear evaluation message
+            llmAdviceDiv.classList.add('hidden'); // Hide AI advice
+            llmAdviceDiv.innerHTML = ''; // Clear AI advice content
+            loadingSpinner.classList.add('hidden'); // Hide spinner
+        }
+
+        // Add event listeners for action buttons
+        calculateScoreBtn.addEventListener('click', calculateScore);
+        resetChecklistBtn.addEventListener('click', resetChecklist);
+
+        // Set data-category attributes dynamically for robustness
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = [
+                { title: '공부 목표 정하기 (계획하기)', category: '공부 목표 정하기' },
+                { title: '공부 계획 세우기 (실천 준비)', category: '공부 계획 세우기' },
+                { title: '공부하기 (실천하고 관리하기)', category: '공부하기' },
+                { title: '공부 결과 확인하고 고치기 (점검하고 발전시키기)', category: '공부 결과 확인하고 고치기' },
+                { title: '나 자신을 관리하고 좋은 마음 갖기 (자기 관리와 태도)', category: '나 자신을 관리하고 좋은 마음 갖기' }
+            ];
+
+            sections.forEach(sectionInfo => {
+                const sectionElement = Array.from(document.querySelectorAll('.checklist-section h2')).find(h2 => h2.textContent.includes(sectionInfo.title.split(' ')[0]));
+                if (sectionElement) {
+                    const parentDiv = sectionElement.nextElementSibling; // This assumes the div with space-y-4 is immediately after h2
+                    if (parentDiv) {
+                        parentDiv.querySelectorAll('.checklist-button').forEach(button => {
+                            button.dataset.category = sectionInfo.category;
+                        });
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
